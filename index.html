@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FuncTrain — Plan Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #161619;
+    --surface2: #1e1e23;
+    --border: #2a2a32;
+    --accent: #e8ff47;
+    --accent2: #ff6b35;
+    --accent3: #47c8ff;
+    --text: #f0f0f5;
+    --muted: #6b6b7e;
+    --block1: #e8ff47;
+    --block2: #ff6b35;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(232,255,71,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232,255,71,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
+
+  /* Header */
+  header {
+    padding: 24px 0 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.4rem;
+    letter-spacing: 0.05em;
+    color: var(--text);
+  }
+
+  .logo span { color: var(--accent); }
+
+  .header-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 28px 0 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 6vw, 5rem);
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+  }
+
+  .hero-title .highlight { color: var(--accent); }
+
+  .hero-desc {
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    max-width: 400px;
+    margin-top: 16px;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 32px;
+    margin-top: 32px;
+  }
+
+  .stat { text-align: left; }
+  .stat-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Generate button */
+  .generate-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+  }
+
+  .generate-panel h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  .filter-group { margin-bottom: 16px; }
+
+  .filter-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .chip {
+    padding: 6px 14px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--accent); color: #0d0d0f; border-color: var(--accent); font-weight: 600; }
+  .chip.active2 { background: var(--accent2); color: #fff; border-color: var(--accent2); font-weight: 600; }
+
+  .btn-generate {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: #0d0d0f;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 20px;
+  }
+
+  .btn-generate:hover {
+    background: #d4eb00;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(232,255,71,0.25);
+  }
+
+  /* Blocks */
+  .blocks-section { padding: 24px 0 32px; }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  /* Two blocks stacked vertically, each taking full width */
+  .blocks-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .block-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .block-header {
+    padding: 16px 28px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .block-header-left { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+
+  .block-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 4px 10px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+
+  .tag-strength { background: rgba(232,255,71,0.1); color: var(--block1); border: 1px solid rgba(232,255,71,0.2); }
+  .tag-cardio { background: rgba(255,107,53,0.1); color: var(--block2); border: 1px solid rgba(255,107,53,0.2); }
+
+  .block-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 0.05em;
+  }
+
+  .block-meta {
+    display: flex;
+    gap: 16px;
+    margin-left: auto;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    white-space: nowrap;
+  }
+
+  .meta-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dot-strength { background: var(--block1); }
+  .dot-cardio { background: var(--block2); }
+
+  /* ── KEY LAYOUT: block body splits into exercises (left) + timer (right) ── */
+  .block-body {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    min-height: 0;
+  }
+
+  .block-exercises {
+    padding: 16px 20px;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    max-height: 340px;
+  }
+
+  /* Scrollbar styling */
+  .block-exercises::-webkit-scrollbar { width: 4px; }
+  .block-exercises::-webkit-scrollbar-track { background: transparent; }
+  .block-exercises::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .block-timer-panel {
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface2);
+    gap: 0;
+  }
+
+  /* Format selector for cardio */
+  .format-selector {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .format-btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .format-btn.active { background: rgba(255,107,53,0.15); border-color: var(--accent2); color: var(--accent2); }
+  .format-btn:hover:not(.active) { border-color: var(--muted); color: var(--text); }
+
+  /* Exercise list */
+  .exercise-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .exercise-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    animation: slideIn 0.3s ease both;
+  }
+
+  .exercise-item:hover { border-color: var(--border); }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .ex-left { display: flex; align-items: center; gap: 12px; }
+
+  .ex-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    width: 20px;
+    text-align: right;
+  }
+
+  .ex-body-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .ex-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .ex-muscle {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-top: 1px;
+  }
+
+  .ex-right { display: flex; align-items: center; gap: 10px; }
+
+  .ex-badge {
+    font-size: 0.65rem;
+    font-family: 'DM Mono', monospace;
+    padding: 3px 8px;
+    border-radius: 100px;
+    background: var(--surface);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    text-transform: uppercase;
+  }
+
+  .ex-swap {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.15s;
+  }
+
+  .ex-swap:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Body part color map */
+  .bp-core { background: #a78bfa; }
+  .bp-chest { background: #fb7185; }
+  .bp-back { background: #34d399; }
+  .bp-legs { background: #60a5fa; }
+  .bp-glutes { background: #f472b6; }
+  .bp-hamstrings { background: #f59e0b; }
+  .bp-shoulders { background: #38bdf8; }
+  .bp-biceps { background: #4ade80; }
+  .bp-triceps { background: #f97316; }
+  .bp-cardio { background: #ff6b35; }
+  .bp-fullbody { background: #e8ff47; }
+  .bp-lowerback { background: #c084fc; }
+  .bp-calves { background: #22d3ee; }
+
+  /* Format info banner */
+  .format-info {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,107,53,0.2);
+    background: rgba(255,107,53,0.06);
+    margin-bottom: 14px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    line-height: 1.5;
+  }
+
+  .format-info strong { color: var(--accent2); }
+
+  /* Timer strip */
+  .timer-strip {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .timer-cell {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+
+  .timer-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    color: var(--block1);
+    line-height: 1;
+  }
+
+  .timer-val.orange { color: var(--block2); }
+
+  .timer-key {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--muted);
+  }
+
+  .empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.4; }
+  .empty-text { font-size: 0.85rem; line-height: 1.6; }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 32px;
+    padding: 20px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+
+  .legend-title {
+    width: 100%;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 4px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  /* Footer */
+  footer {
+    padding: 32px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-text {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .btn-export {
+    padding: 10px 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-export:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Countdown Timer — lives in .block-timer-panel */
+  .countdown-timer {
+    width: 100%;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    text-align: center;
+  }
+
+  .countdown-timer.tabata-active .countdown-display { color: #ff3c3c; }
+  .countdown-timer.tabata-rest   .countdown-display { color: #32dc78; }
+
+  .cardio-timer-status {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    min-height: 16px;
+    margin-bottom: 6px;
+    transition: color 0.3s;
+    line-height: 1.4;
+  }
+
+  .cardio-timer-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    min-height: 18px;
+    margin-top: 6px;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+  }
+
+  .countdown-display {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 6vw, 6.5rem);
+    line-height: 1;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    transition: color 0.25s;
+  }
+
+  .countdown-display.running   { color: #fff; }
+  .countdown-display.finished  { color: var(--accent2); animation: pulse 0.6s ease infinite alternate; }
+  .countdown-display.emom-even { color: var(--accent); }
+  .countdown-display.emom-odd  { color: var(--accent3); }
+  .countdown-display.tabata-active { color: #ff3c3c; }
+  .countdown-display.tabata-rest   { color: #32dc78; }
+
+  @keyframes pulse {
+    from { opacity: 1; }
+    to { opacity: 0.4; }
+  }
+
+  .countdown-controls {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .timer-btn {
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.18s;
+    background: var(--surface);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .btn-start { border-color: rgba(232,255,71,0.3); color: var(--accent); }
+  .btn-start:hover { background: rgba(232,255,71,0.1); }
+  .btn-pause { border-color: rgba(71,200,255,0.3); color: var(--accent3); }
+  .btn-pause:hover { background: rgba(71,200,255,0.1); }
+  .btn-reset { border-color: rgba(255,107,53,0.3); color: var(--accent2); }
+  .btn-reset:hover { background: rgba(255,107,53,0.1); }
+
+  /* Tabata panel background flash */
+  .block-timer-panel.tabata-active { background: rgba(255,60,60,0.08); }
+  .block-timer-panel.tabata-rest   { background: rgba(50,220,120,0.08); }
+
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; gap: 20px; }
+    .block-body { grid-template-columns: 1fr; }
+    .block-exercises { border-right: none; border-bottom: 1px solid var(--border); max-height: none; }
+    .block-timer-panel { padding: 20px; }
+    .countdown-display { font-size: 4rem; }
+    .stats-row { gap: 20px; }
+    .container { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="logo">Func<span>Train</span></div>
+    <div class="header-badge">Plan Builder v1.1</div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <h1 class="hero-title">
+        BUILD YOUR<br>
+        <span class="highlight">FUNCTIONAL</span><br>
+        TRAINING PLAN
+      </h1>
+      <p class="hero-desc">Generate balanced training blocks that target different muscle groups, avoid overloading, and keep you moving efficiently.</p>
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-val">52</div>
+          <div class="stat-label">Exercises</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">32</div>
+          <div class="stat-label">Minutes Total</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">2</div>
+          <div class="stat-label">Blocks</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="generate-panel">
+      <h3>Configure Your Session</h3>
+
+      <div class="filter-group">
+        <span class="filter-label">Available Equipment</span>
+        <div class="chip-row" id="equipment-chips">
+          <div class="chip active" data-val="bodyweight">Bodyweight</div>
+          <div class="chip active" data-val="kettlebell">Kettlebell</div>
+          <div class="chip active" data-val="dumbbell">Dumbbells</div>
+          <div class="chip active" data-val="bar">Bar (≤20kg)</div>
+          <div class="chip active" data-val="trx">TRX</div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <span class="filter-label">Cardio Block Format</span>
+        <div class="chip-row" id="format-chips">
+          <div class="chip active2" data-val="AMRAP">AMRAP</div>
+          <div class="chip" data-val="EMOM">EMOM</div>
+          <div class="chip" data-val="Tabata">Tabata</div>
+        </div>
+      </div>
+
+      <button class="btn-generate" onclick="generatePlan()">⚡ Generate Training Plan</button>
+    </div>
+  </section>
+
+  <section class="blocks-section">
+    <div class="section-label">// Training Blocks</div>
+    <div class="blocks-grid">
+
+      <!-- STRENGTH BLOCK -->
+      <div class="block-card">
+        <div class="block-header">
+          <div class="block-header-left">
+            <div class="block-tag tag-strength">Block A — Strength</div>
+            <div class="block-title">NO-CARDIO WORK</div>
+          </div>
+          <div class="block-meta">
+            <div class="meta-item"><div class="meta-dot dot-strength"></div>20 minutes</div>
+            <div class="meta-item"><div class="meta-dot dot-strength"></div>4 rounds</div>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="block-exercises">
+            <div class="exercise-list" id="strength-list">
+              <div class="empty-state">
+                <div class="empty-icon">🏋️</div>
+                <div class="empty-text">Configure and generate<br>your training plan above</div>
+              </div>
+            </div>
+          </div>
+          <div class="block-timer-panel" id="panel-strength">
+            <div class="countdown-timer" id="timer-strength">
+              <div class="countdown-display" id="strength-display">20:00</div>
+              <div class="countdown-controls">
+                <button class="timer-btn btn-start" onclick="timerAction('strength','start')">▶ Start</button>
+                <button class="timer-btn btn-pause" onclick="timerAction('strength','pause')">⏸ Pause</button>
+                <button class="timer-btn btn-reset" onclick="timerAction('strength','reset')">↺ Reset</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARDIO BLOCK -->
+      <div class="block-card">
+        <div class="block-header">
+          <div class="block-header-left">
+            <div class="block-tag tag-cardio">Block B — Cardio</div>
+            <div class="block-title">CONDITIONING</div>
+          </div>
+          <div class="block-meta">
+            <div class="meta-item"><div class="meta-dot dot-cardio"></div>12 minutes</div>
+            <div class="meta-item"><div class="meta-dot dot-cardio"></div><span id="format-display">AMRAP</span></div>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="block-exercises">
+            <div class="format-selector">
+              <div class="format-btn active" onclick="setFormat('AMRAP', this)">AMRAP</div>
+              <div class="format-btn" onclick="setFormat('EMOM', this)">EMOM</div>
+              <div class="format-btn" onclick="setFormat('Tabata', this)">Tabata</div>
+            </div>
+            <div class="format-info" id="format-info">
+              <strong>AMRAP · 12 min</strong> — As Many Rounds As Possible. Complete the circuit continuously, resting only as needed.
+            </div>
+            <div class="exercise-list" id="cardio-list">
+              <div class="empty-state">
+                <div class="empty-icon">🔥</div>
+                <div class="empty-text">Configure and generate<br>your training plan above</div>
+              </div>
+            </div>
+          </div>
+          <div class="block-timer-panel" id="panel-cardio">
+            <div class="countdown-timer" id="timer-cardio">
+              <div class="cardio-timer-status" id="cardio-status"></div>
+              <div class="countdown-display" id="cardio-display">12:00</div>
+              <div class="cardio-timer-sub" id="cardio-sub"></div>
+              <div class="countdown-controls">
+                <button class="timer-btn btn-start" onclick="timerAction('cardio','start')">▶ Start</button>
+                <button class="timer-btn btn-pause" onclick="timerAction('cardio','pause')">⏸ Pause</button>
+                <button class="timer-btn btn-reset" onclick="timerAction('cardio','reset')">↺ Reset</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend" id="legend" style="display:none">
+      <div class="legend-title">Body Part Color Key</div>
+      <div class="legend-item"><div class="legend-dot bp-core"></div> Core / Abs</div>
+      <div class="legend-item"><div class="legend-dot bp-chest"></div> Chest</div>
+      <div class="legend-item"><div class="legend-dot bp-back"></div> Upper Back</div>
+      <div class="legend-item"><div class="legend-dot bp-legs"></div> Quads</div>
+      <div class="legend-item"><div class="legend-dot bp-glutes"></div> Glutes</div>
+      <div class="legend-item"><div class="legend-dot bp-hamstrings"></div> Hamstrings</div>
+      <div class="legend-item"><div class="legend-dot bp-shoulders"></div> Shoulders</div>
+      <div class="legend-item"><div class="legend-dot bp-biceps"></div> Biceps</div>
+      <div class="legend-item"><div class="legend-dot bp-triceps"></div> Triceps</div>
+      <div class="legend-item"><div class="legend-dot bp-cardio"></div> Cardio</div>
+      <div class="legend-item"><div class="legend-dot bp-fullbody"></div> Full Body</div>
+      <div class="legend-item"><div class="legend-dot bp-lowerback"></div> Lower Back</div>
+      <div class="legend-item"><div class="legend-dot bp-calves"></div> Calves</div>
+      <div class="legend-item"><div class="legend-dot bp-trx" style="background:#00e5ff"></div> TRX</div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-text">funcTrain — functional training plan builder</div>
+    <button class="btn-export" onclick="exportPlan()">↓ Export Plan</button>
+  </footer>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+
+const EXERCISES = {
+  strength: [
+    // Core
+    { name: "Hollow Rocks", muscle: "Abs / Core", bodyPart: "core", eq: "bodyweight", reps: "12 reps" },
+    { name: "Dead Bug", muscle: "Abs / Deep Core", bodyPart: "core", eq: "bodyweight", reps: "10 each" },
+    { name: "Plank", muscle: "Core / Shoulders", bodyPart: "core", eq: "bodyweight", reps: "40 sec" },
+    { name: "Side Plank", muscle: "Obliques / Core", bodyPart: "core", eq: "bodyweight", reps: "30s each" },
+    { name: "V-Ups", muscle: "Abs / Hip Flexors", bodyPart: "core", eq: "bodyweight", reps: "12 reps" },
+    { name: "Bicycle Crunches", muscle: "Abs / Obliques", bodyPart: "core", eq: "bodyweight", reps: "12 each" },
+    { name: "Bird Dog", muscle: "Core / Lower Back", bodyPart: "core", eq: "bodyweight", reps: "10 each" },
+    // Chest
+    { name: "Push-Up", muscle: "Chest / Triceps / Core", bodyPart: "chest", eq: "bodyweight", reps: "12 reps" },
+    { name: "Wide Push-Up", muscle: "Chest / Triceps", bodyPart: "chest", eq: "bodyweight", reps: "12 reps" },
+    { name: "Dumbbell Floor Press", muscle: "Chest / Triceps", bodyPart: "chest", eq: "dumbbell", reps: "12 reps" },
+    { name: "Dumbbell Pullover", muscle: "Chest / Lats", bodyPart: "chest", eq: "dumbbell", reps: "12 reps" },
+    { name: "TRX Push-Up", muscle: "Chest / Core / Triceps", bodyPart: "chest", eq: "trx", reps: "10 reps" },
+    // Back
+    { name: "Bent-Over Row", muscle: "Upper Back / Lats / Biceps", bodyPart: "back", eq: "dumbbell", reps: "12 reps" },
+    { name: "Single-Arm Dumbbell Row", muscle: "Upper Back / Lats / Biceps", bodyPart: "back", eq: "dumbbell", reps: "10 each" },
+    { name: "TRX Row", muscle: "Upper Back / Lats / Biceps", bodyPart: "back", eq: "trx", reps: "12 reps" },
+    // Lower Back
+    { name: "Superman Hold", muscle: "Lower Back / Glutes", bodyPart: "lowerback", eq: "bodyweight", reps: "40 sec" },
+    { name: "Good Morning (BW)", muscle: "Lower Back / Hamstrings", bodyPart: "lowerback", eq: "bodyweight", reps: "12 reps" },
+    { name: "Good Morning (Bar)", muscle: "Hamstrings / Lower Back", bodyPart: "lowerback", eq: "bar", reps: "12 reps" },
+    // Quads / Legs
+    { name: "Squat", muscle: "Quads / Glutes", bodyPart: "legs", eq: "bodyweight", reps: "12 reps" },
+    { name: "Sumo Squat", muscle: "Inner Thighs / Glutes", bodyPart: "legs", eq: "bodyweight", reps: "12 reps" },
+    { name: "Goblet Squat", muscle: "Quads / Glutes", bodyPart: "legs", eq: "kettlebell", reps: "12 reps" },
+    { name: "Split Squat (Bulgarian)", muscle: "Quads / Glutes / Balance", bodyPart: "legs", eq: "bodyweight", reps: "10 each" },
+    { name: "Lunge", muscle: "Quads / Glutes", bodyPart: "legs", eq: "bodyweight", reps: "10 each" },
+    { name: "Reverse Lunge", muscle: "Quads / Glutes / Balance", bodyPart: "legs", eq: "dumbbell", reps: "10 each" },
+    // Glutes
+    { name: "Glute Bridge", muscle: "Glutes / Hamstrings", bodyPart: "glutes", eq: "bodyweight", reps: "12 reps" },
+    { name: "Single-Leg Glute Bridge", muscle: "Glutes / Hamstrings / Balance", bodyPart: "glutes", eq: "bodyweight", reps: "10 each" },
+    { name: "Donkey Kicks", muscle: "Glutes", bodyPart: "glutes", eq: "bodyweight", reps: "12 each" },
+    { name: "Clamshells", muscle: "Glutes / Hip Abductors", bodyPart: "glutes", eq: "bodyweight", reps: "12 each" },
+    // Hamstrings
+    { name: "Romanian Deadlift", muscle: "Hamstrings / Glutes", bodyPart: "hamstrings", eq: "dumbbell", reps: "12 reps" },
+    { name: "Single-Leg Deadlift", muscle: "Hamstrings / Glutes / Balance", bodyPart: "hamstrings", eq: "dumbbell", reps: "10 each" },
+    // Shoulders
+    { name: "Dumbbell Shoulder Press", muscle: "Shoulders / Triceps", bodyPart: "shoulders", eq: "dumbbell", reps: "12 reps" },
+    { name: "Dumbbell Lateral Raise", muscle: "Lateral Deltoids", bodyPart: "shoulders", eq: "dumbbell", reps: "12 reps" },
+    { name: "Front Raise", muscle: "Front Deltoids", bodyPart: "shoulders", eq: "dumbbell", reps: "12 reps" },
+    { name: "Upright Row", muscle: "Shoulders / Traps", bodyPart: "shoulders", eq: "dumbbell", reps: "12 reps" },
+    // Biceps
+    { name: "Dumbbell Curl", muscle: "Biceps", bodyPart: "biceps", eq: "dumbbell", reps: "12 reps" },
+    { name: "Hammer Curl", muscle: "Biceps / Brachialis", bodyPart: "biceps", eq: "dumbbell", reps: "12 reps" },
+    // Triceps
+    { name: "French Press", muscle: "Triceps", bodyPart: "triceps", eq: "dumbbell", reps: "12 reps" },
+    { name: "TRX Tricep Extension", muscle: "Triceps / Core", bodyPart: "triceps", eq: "trx", reps: "12 reps" },
+    // Full Body
+    { name: "Turkish Get-Up", muscle: "Full Body / Shoulder Stability", bodyPart: "fullbody", eq: "kettlebell", reps: "5 each" },
+  ],
+  cardio: [
+    // Pure cardio — always included regardless of equipment filter
+    { name: "Burpees", muscle: "Full Body / Cardio", bodyPart: "cardio", eq: "bodyweight", reps: "10 reps" },
+    { name: "Jump Squat", muscle: "Quads / Glutes / Cardio", bodyPart: "cardio", eq: "bodyweight", reps: "12 reps" },
+    { name: "Mountain Climbers", muscle: "Core / Cardio / Shoulders", bodyPart: "cardio", eq: "bodyweight", reps: "30 sec" },
+    { name: "High Knees", muscle: "Hip Flexors / Cardio", bodyPart: "cardio", eq: "bodyweight", reps: "30 sec" },
+    { name: "Jumping Jacks", muscle: "Full Body / Cardio", bodyPart: "cardio", eq: "bodyweight", reps: "30 sec" },
+    { name: "Skipping / Jump Rope", muscle: "Calves / Coordination", bodyPart: "calves", eq: "bodyweight", reps: "40 sec" },
+    { name: "Tuck Jumps", muscle: "Legs / Power / Cardio", bodyPart: "legs", eq: "bodyweight", reps: "10 reps" },
+    { name: "Lateral Bounds", muscle: "Glutes / Legs / Cardio", bodyPart: "legs", eq: "bodyweight", reps: "10 each" },
+    { name: "Bear Crawl", muscle: "Core / Shoulders / Cardio", bodyPart: "core", eq: "bodyweight", reps: "20 sec" },
+    { name: "Squat to Kick", muscle: "Quads / Hip Flexors / Cardio", bodyPart: "legs", eq: "bodyweight", reps: "10 each" },
+    { name: "Plank to Push-Up", muscle: "Core / Chest / Triceps", bodyPart: "core", eq: "bodyweight", reps: "10 reps" },
+    { name: "Speed Skater", muscle: "Glutes / Legs / Balance", bodyPart: "glutes", eq: "bodyweight", reps: "12 each" },
+    // Light equipment cardio
+    { name: "Kettlebell Swing", muscle: "Glutes / Hamstrings / Lower Back", bodyPart: "hamstrings", eq: "kettlebell", reps: "15 reps" },
+    { name: "Thruster", muscle: "Full Body / Cardio / Power", bodyPart: "fullbody", eq: "dumbbell", reps: "10 reps" },
+    { name: "Dumbbell Snatch", muscle: "Full Body / Explosive Power", bodyPart: "fullbody", eq: "dumbbell", reps: "8 each" },
+  ]
+};
+
+const FORMAT_INFO = {
+  AMRAP: "<strong>AMRAP · 12 min</strong> — As Many Rounds As Possible. Complete the circuit continuously, resting only as needed.",
+  EMOM: "<strong>EMOM · 12 min</strong> — Every Minute On the Minute. Start a new exercise at the top of each minute, cycling through the list. Rest whatever time remains in the minute.",
+  Tabata: "<strong>Tabata · 12 min</strong> — 20 seconds work / 10 seconds rest. Cycle through exercises, completing 6 rounds per exercise."
+};
+
+const BP_COLORS = {
+  core: "bp-core", chest: "bp-chest", back: "bp-back", legs: "bp-legs",
+  glutes: "bp-glutes", hamstrings: "bp-hamstrings", shoulders: "bp-shoulders",
+  biceps: "bp-biceps", triceps: "bp-triceps", cardio: "bp-cardio",
+  fullbody: "bp-fullbody", lowerback: "bp-lowerback", calves: "bp-calves"
+};
+
+// ─── STATE ──────────────────────────────────────────────────────────────────
+
+let state = {
+  equipment: new Set(["bodyweight", "kettlebell", "dumbbell", "bar", "trx"]),
+  format: "AMRAP",
+  exCount: 6,
+  strengthPlan: [],
+  cardioPlan: []
+};
+
+// ─── CHIP INTERACTIONS ──────────────────────────────────────────────────────
+
+document.querySelectorAll('#equipment-chips .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    chip.classList.toggle('active');
+    const val = chip.dataset.val;
+    if (state.equipment.has(val)) {
+      if (val !== 'bodyweight') state.equipment.delete(val); // always keep bodyweight
+    } else {
+      state.equipment.add(val);
+    }
+    // always keep bodyweight chip active
+    document.querySelector('#equipment-chips .chip[data-val="bodyweight"]').classList.add('active');
+    state.equipment.add('bodyweight');
+  });
+});
+
+document.querySelectorAll('#format-chips .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#format-chips .chip').forEach(c => c.classList.remove('active2'));
+    chip.classList.add('active2');
+    state.format = chip.dataset.val;
+    document.getElementById('format-display').textContent = state.format;
+    document.getElementById('format-info').innerHTML = FORMAT_INFO[state.format];
+    // sync format buttons in cardio block
+    document.querySelectorAll('.format-btn').forEach(b => {
+      b.classList.toggle('active', b.textContent === state.format);
+    });
+  });
+});
+
+
+function setFormat(fmt, btn) {
+  state.format = fmt;
+  document.getElementById('format-display').textContent = fmt;
+  document.getElementById('format-info').innerHTML = FORMAT_INFO[fmt];
+  document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // sync top chips
+  document.querySelectorAll('#format-chips .chip').forEach(c => {
+    c.classList.toggle('active2', c.dataset.val === fmt);
+  });
+  if (state.cardioPlan.length > 0) {
+    // If switching to Tabata, enforce even exercise count
+    if (fmt === 'Tabata' && state.cardioPlan.length % 2 !== 0) {
+      state.cardioPlan = state.cardioPlan.slice(0, state.cardioPlan.length - 1);
+    }
+    renderCardio(state.cardioPlan);
+  }
+  resetCardioTimer();
+}
+
+// ─── GENERATION ─────────────────────────────────────────────────────────────
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function filterByEquipment(exercises) {
+  return exercises.filter(ex => state.equipment.has(ex.eq));
+}
+
+function pickBalanced(pool, count) {
+  // Group by bodyPart
+  const groups = {};
+  pool.forEach(ex => {
+    if (!groups[ex.bodyPart]) groups[ex.bodyPart] = [];
+    groups[ex.bodyPart].push(ex);
+  });
+
+  const parts = shuffle(Object.keys(groups));
+  const result = [];
+  const usedParts = new Set();
+
+  // First pass: one per body part
+  for (const part of parts) {
+    if (result.length >= count) break;
+    if (!usedParts.has(part)) {
+      const options = shuffle(groups[part]);
+      result.push(options[0]);
+      usedParts.add(part);
+    }
+  }
+
+  // Second pass: fill remaining
+  if (result.length < count) {
+    const remaining = pool.filter(ex => !result.includes(ex));
+    const shuffled = shuffle(remaining);
+    for (const ex of shuffled) {
+      if (result.length >= count) break;
+      result.push(ex);
+    }
+  }
+
+  return result.slice(0, count);
+}
+
+function generatePlan() {
+  const strengthPool = filterByEquipment(EXERCISES.strength);
+  const cardioPool = filterByEquipment(EXERCISES.cardio);
+
+  state.strengthPlan = pickBalanced(strengthPool, state.exCount);
+
+  // Cardio: pick 5–7 exercises, at least 3 pure cardio bodyPart, rest balanced by body part
+  let cardioCount = 5 + Math.floor(Math.random() * 3); // 5, 6 or 7
+  // Tabata requires even number of exercises
+  if (state.format === 'Tabata' && cardioCount % 2 !== 0) cardioCount++;
+  if (cardioCount > 7) cardioCount = 6;
+
+  const pureCardio = shuffle(cardioPool.filter(e => e.bodyPart === 'cardio' || e.bodyPart === 'calves'));
+  const otherCardio = shuffle(cardioPool.filter(e => e.bodyPart !== 'cardio' && e.bodyPart !== 'calves'));
+
+  const guaranteed = pureCardio.slice(0, 3);
+  const remaining = cardioCount - guaranteed.length;
+  const filler = [...pureCardio.slice(3), ...otherCardio];
+  const usedParts = new Set(guaranteed.map(e => e.bodyPart));
+  const fillerPicked = [];
+  for (const ex of filler) {
+    if (fillerPicked.length >= remaining) break;
+    if (!usedParts.has(ex.bodyPart)) { fillerPicked.push(ex); usedParts.add(ex.bodyPart); }
+  }
+  for (const ex of filler) {
+    if (fillerPicked.length >= remaining) break;
+    if (!fillerPicked.includes(ex) && !guaranteed.includes(ex)) fillerPicked.push(ex);
+  }
+
+  state.cardioPlan = shuffle([...guaranteed, ...fillerPicked]).slice(0, cardioCount);
+
+  renderStrength(state.strengthPlan);
+  renderCardio(state.cardioPlan);
+  document.getElementById('legend').style.display = 'flex';
+
+  // Reset both timers after generating a new plan
+  strengthTimer.running = false;
+  clearInterval(strengthTimer.interval);
+  strengthTimer.remaining = strengthTimer.total;
+  updateStrengthDisplay();
+  resetCardioTimer();
+}
+
+function renderStrength(exercises) {
+  const list = document.getElementById('strength-list');
+  list.innerHTML = '';
+  exercises.forEach((ex, i) => {
+    list.appendChild(createExItem(ex, i, 'strength'));
+  });
+}
+
+function renderCardio(exercises) {
+  const list = document.getElementById('cardio-list');
+  list.innerHTML = '';
+
+  // Update format info
+  document.getElementById('format-info').innerHTML = FORMAT_INFO[state.format];
+  document.getElementById('format-display').textContent = state.format;
+
+  exercises.forEach((ex, i) => {
+    const reps = getCardioReps(ex, i);
+    list.appendChild(createExItem({...ex, reps}, i, 'cardio'));
+  });
+}
+
+function getCardioReps(ex, idx) {
+  if (state.format === 'Tabata') return "20s on / 10s off";
+  if (state.format === 'EMOM') return `Min ${idx + 1} / ${idx + 1 + state.cardioPlan.length}: ${ex.reps}`;
+  return ex.reps;
+}
+
+function createExItem(ex, idx, block) {
+  const div = document.createElement('div');
+  div.className = 'exercise-item';
+  div.style.animationDelay = `${idx * 60}ms`;
+  div.innerHTML = `
+    <div class="ex-left">
+      <div class="ex-num">0${idx + 1}</div>
+      <div class="ex-body-dot ${BP_COLORS[ex.bodyPart] || 'bp-core'}"></div>
+      <div>
+        <div class="ex-name">${ex.name}</div>
+        <div class="ex-muscle">${ex.muscle}</div>
+      </div>
+    </div>
+    <div class="ex-right">
+      <div class="ex-badge">${ex.reps}</div>
+      <div class="ex-swap" title="Swap exercise" onclick="swapExercise('${block}', ${idx})">⟳</div>
+    </div>
+  `;
+  return div;
+}
+
+function swapExercise(block, idx) {
+  if (block === 'strength') {
+    const current = state.strengthPlan[idx];
+    const pool = filterByEquipment(EXERCISES.strength).filter(e =>
+      e.bodyPart === current.bodyPart && !state.strengthPlan.includes(e)
+    );
+    if (pool.length > 0) {
+      state.strengthPlan[idx] = shuffle(pool)[0];
+    } else {
+      // fallback: any unused
+      const all = filterByEquipment(EXERCISES.strength).filter(e => !state.strengthPlan.includes(e));
+      if (all.length > 0) state.strengthPlan[idx] = shuffle(all)[0];
+    }
+    renderStrength(state.strengthPlan);
+  } else {
+    const current = state.cardioPlan[idx];
+    const cardioPool = filterByEquipment(EXERCISES.cardio);
+    const pool = cardioPool.filter(e => e.bodyPart === current.bodyPart && !state.cardioPlan.includes(e));
+    const fallback = cardioPool.filter(e => !state.cardioPlan.includes(e));
+    state.cardioPlan[idx] = shuffle(pool.length > 0 ? pool : fallback)[0] || current;
+    renderCardio(state.cardioPlan);
+  }
+}
+
+function exportPlan() {
+  if (state.strengthPlan.length === 0) {
+    alert('Generate a plan first!');
+    return;
+  }
+
+  let text = "═══════════════════════════════\n";
+  text += "  FUNCTRAIN — TRAINING PLAN\n";
+  text += "═══════════════════════════════\n\n";
+  text += "BLOCK A — STRENGTH (20 min · 4 rounds)\n";
+  text += "───────────────────────────────\n";
+  state.strengthPlan.forEach((ex, i) => {
+    text += `${i + 1}. ${ex.name.padEnd(30)} ${ex.reps}\n`;
+    text += `   Target: ${ex.muscle}\n`;
+  });
+  text += "\n";
+  text += `BLOCK B — CARDIO (12 min · ${state.format})\n`;
+  text += "───────────────────────────────\n";
+  state.cardioPlan.forEach((ex, i) => {
+    text += `${i + 1}. ${ex.name.padEnd(30)} ${getCardioReps(ex, i)}\n`;
+    text += `   Target: ${ex.muscle}\n`;
+  });
+  text += "\n═══════════════════════════════\n";
+
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'functrain-plan.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── COUNTDOWN TIMERS ───────────────────────────────────────────────────────
+
+// ── Web Audio beeps ──────────────────────────────────────────────────────────
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function beep(freq, duration, type = 'sine', vol = 0.35) {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration);
+  } catch(e) {}
+}
+// Single mid beep — EMOM minute change
+function beepEmom() { beep(880, 0.18, 'sine', 0.4); }
+// Double beep — Tabata phase change (active→rest or rest→active)
+function beepTabataActive() {
+  beep(1046, 0.12, 'square', 0.3);
+  setTimeout(() => beep(1318, 0.18, 'square', 0.3), 130);
+}
+function beepTabataRest() {
+  beep(523, 0.18, 'sine', 0.3);
+}
+// Triple end beep
+function beepFinish() {
+  beep(1047, 0.15, 'sine', 0.4);
+  setTimeout(() => beep(1047, 0.15, 'sine', 0.4), 200);
+  setTimeout(() => beep(1568, 0.3,  'sine', 0.5), 400);
+}
+
+// ── Strength timer (simple countdown) ────────────────────────────────────────
+const strengthTimer = {
+  total: 20 * 60, remaining: 20 * 60,
+  interval: null, running: false
+};
+
+// ── Cardio timer (format-aware) ───────────────────────────────────────────────
+const cardioTimer = {
+  total: 12 * 60, remaining: 12 * 60,
+  interval: null, running: false,
+  // EMOM
+  lastMinute: -1,
+  // Tabata
+  tabataPhase: 'active',   // 'active' | 'rest'
+  tabataPhaseRemaining: 20,
+  tabataExIdx: 0,
+  tabataRound: 0,
+  tabataExCount: 0,
+  tabataRoundsTotal: 0,
+};
+
+function formatTime(s) {
+  return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
+}
+
+// ── Strength display ─────────────────────────────────────────────────────────
+function updateStrengthDisplay() {
+  const t = strengthTimer;
+  const el = document.getElementById('strength-display');
+  el.textContent = formatTime(t.remaining);
+  el.className = 'countdown-display';
+  if (t.remaining === 0) { el.classList.add('finished'); }
+  else if (t.running)    { el.classList.add('running'); }
+}
+
+// ── Cardio display ────────────────────────────────────────────────────────────
+function updateCardioDisplay() {
+  const t = cardioTimer;
+  const fmt = state.format;
+  const dispEl  = document.getElementById('cardio-display');
+  const statEl  = document.getElementById('cardio-status');
+  const subEl   = document.getElementById('cardio-sub');
+  const wrapEl  = document.getElementById('timer-cardio');
+  const panelEl = document.getElementById('panel-cardio');
+
+  // Clear all state classes
+  dispEl.className = 'countdown-display';
+  wrapEl.className = 'countdown-timer';
+  if (panelEl) panelEl.className = 'block-timer-panel';
+
+  if (t.remaining === 0) {
+    dispEl.textContent = '00:00';
+    dispEl.classList.add('finished');
+    statEl.textContent = '✓ Done!';
+    subEl.textContent  = '';
+    return;
+  }
+
+  if (fmt === 'AMRAP') {
+    dispEl.textContent = formatTime(t.remaining);
+    if (t.running) dispEl.classList.add('running');
+    statEl.textContent = t.running ? 'AMRAP — keep moving!' : 'AMRAP';
+    subEl.textContent  = '';
+
+  } else if (fmt === 'EMOM') {
+    dispEl.textContent = formatTime(t.remaining);
+    const elapsed  = t.total - t.remaining;          // seconds elapsed
+    const minElapsed = Math.floor(elapsed / 60);     // completed full minutes
+    const secInMin   = elapsed % 60;                 // seconds within current minute
+    const curMinute  = minElapsed;                   // 0-based current minute index
+    const exCount    = state.cardioPlan.length || 1;
+    const exIdx      = curMinute % exCount;
+    const secLeft    = 60 - secInMin;                // seconds left in this minute
+
+    if (t.running) {
+      dispEl.classList.add(curMinute % 2 === 0 ? 'emom-even' : 'emom-odd');
+    }
+    const exName = state.cardioPlan[exIdx] ? state.cardioPlan[exIdx].name : '';
+    statEl.textContent = t.running ? `MIN ${curMinute + 1} · EX ${exIdx + 1}/${exCount}` : 'EMOM';
+    subEl.textContent  = t.running ? `${exName} — ${secLeft}s left in minute` : '';
+
+  } else if (fmt === 'Tabata') {
+    // Show phase countdown, not total
+    dispEl.textContent = formatTime(t.tabataPhaseRemaining);
+    const exCount  = t.tabataExCount || state.cardioPlan.length || 2;
+    const exName   = state.cardioPlan[t.tabataExIdx] ? state.cardioPlan[t.tabataExIdx].name : '';
+    const roundsTotal = t.tabataRoundsTotal || computeTabataRounds();
+
+    if (t.tabataPhase === 'active') {
+      dispEl.classList.add('tabata-active');
+      wrapEl.classList.add('tabata-active');
+      if (panelEl) panelEl.classList.add('tabata-active');
+      statEl.textContent = `GO! · EX ${t.tabataExIdx + 1}/${exCount} · RD ${t.tabataRound + 1}/${roundsTotal}`;
+    } else {
+      dispEl.classList.add('tabata-rest');
+      wrapEl.classList.add('tabata-rest');
+      if (panelEl) panelEl.classList.add('tabata-rest');
+      statEl.textContent = `REST · EX ${t.tabataExIdx + 1}/${exCount} · RD ${t.tabataRound + 1}/${roundsTotal}`;
+    }
+    subEl.textContent = t.running ? exName : 'Tabata — 20s work / 10s rest';
+  }
+}
+
+// ── Tabata helpers ────────────────────────────────────────────────────────────
+function computeTabataRounds() {
+  const exCount  = state.cardioPlan.length || 2;
+  const secPerRound = exCount * 30;           // each ex: 20s active + 10s rest
+  return Math.floor((12 * 60) / secPerRound); // full rounds that fit in 12 min
+}
+
+function initTabataState() {
+  const exCount = state.cardioPlan.length || 2;
+  cardioTimer.tabataExCount     = exCount;
+  cardioTimer.tabataRoundsTotal = computeTabataRounds();
+  cardioTimer.tabataPhase       = 'active';
+  cardioTimer.tabataPhaseRemaining = 20;
+  cardioTimer.tabataExIdx       = 0;
+  cardioTimer.tabataRound       = 0;
+}
+
+// ── Main action dispatcher ────────────────────────────────────────────────────
+function timerAction(id, action) {
+  if (id === 'strength') {
+    strengthTimerAction(action);
+  } else {
+    cardioTimerAction(action);
+  }
+}
+
+function strengthTimerAction(action) {
+  const t = strengthTimer;
+  if (action === 'start') {
+    if (t.running || t.remaining === 0) return;
+    t.running = true;
+    updateStrengthDisplay();
+    t.interval = setInterval(() => {
+      if (t.remaining <= 0) {
+        clearInterval(t.interval); t.running = false; t.remaining = 0;
+        beepFinish(); updateStrengthDisplay(); return;
+      }
+      t.remaining--;
+      updateStrengthDisplay();
+    }, 1000);
+  } else if (action === 'pause') {
+    if (!t.running) return;
+    clearInterval(t.interval); t.running = false; updateStrengthDisplay();
+  } else if (action === 'reset') {
+    clearInterval(t.interval); t.running = false;
+    t.remaining = t.total; updateStrengthDisplay();
+  }
+}
+
+function cardioTimerAction(action) {
+  const t = cardioTimer;
+  const fmt = state.format;
+
+  if (action === 'start') {
+    if (t.running) return;
+    // Resume guard: if remaining is 0, do nothing
+    if (fmt !== 'Tabata' && t.remaining === 0) return;
+    if (fmt === 'Tabata' && t.tabataRound >= t.tabataRoundsTotal) return;
+
+    // Init Tabata on first start
+    if (fmt === 'Tabata' && !t.running && t.tabataPhaseRemaining === 20 && t.tabataExIdx === 0 && t.tabataRound === 0) {
+      initTabataState();
+    }
+    t.running = true;
+    updateCardioDisplay();
+
+    if (fmt === 'AMRAP') {
+      t.interval = setInterval(() => {
+        if (t.remaining <= 0) {
+          clearInterval(t.interval); t.running = false; t.remaining = 0;
+          beepFinish(); updateCardioDisplay(); return;
+        }
+        t.remaining--;
+        updateCardioDisplay();
+      }, 1000);
+
+    } else if (fmt === 'EMOM') {
+      t.lastMinute = Math.floor((t.total - t.remaining) / 60);
+      t.interval = setInterval(() => {
+        if (t.remaining <= 0) {
+          clearInterval(t.interval); t.running = false; t.remaining = 0;
+          beepFinish(); updateCardioDisplay(); return;
+        }
+        t.remaining--;
+        const elapsed = t.total - t.remaining;
+        const curMin  = Math.floor(elapsed / 60);
+        // Fire beep when a new minute starts
+        if (curMin !== t.lastMinute) {
+          t.lastMinute = curMin;
+          beepEmom();
+        }
+        updateCardioDisplay();
+      }, 1000);
+
+    } else if (fmt === 'Tabata') {
+      t.interval = setInterval(() => {
+        t.tabataPhaseRemaining--;
+
+        if (t.tabataPhaseRemaining <= 0) {
+          // Advance phase
+          if (t.tabataPhase === 'active') {
+            // Switch to rest
+            t.tabataPhase = 'rest';
+            t.tabataPhaseRemaining = 10;
+            beepTabataRest();
+          } else {
+            // Rest ended → next exercise
+            t.tabataExIdx++;
+            if (t.tabataExIdx >= t.tabataExCount) {
+              // Completed one full round
+              t.tabataExIdx = 0;
+              t.tabataRound++;
+              if (t.tabataRound >= t.tabataRoundsTotal) {
+                // All rounds done
+                clearInterval(t.interval); t.running = false;
+                t.tabataPhaseRemaining = 0;
+                beepFinish(); updateCardioDisplay(); return;
+              }
+            }
+            t.tabataPhase = 'active';
+            t.tabataPhaseRemaining = 20;
+            beepTabataActive();
+          }
+          // Also decrement overall remaining for display reference
+          t.remaining = Math.max(0, t.remaining - 1);
+        } else {
+          t.remaining = Math.max(0, t.remaining - 1);
+        }
+        updateCardioDisplay();
+      }, 1000);
+    }
+
+  } else if (action === 'pause') {
+    if (!t.running) return;
+    clearInterval(t.interval); t.running = false; updateCardioDisplay();
+
+  } else if (action === 'reset') {
+    clearInterval(t.interval); t.running = false;
+    t.remaining = t.total;
+    t.lastMinute = -1;
+    initTabataState();
+    updateCardioDisplay();
+  }
+}
+
+// Re-init tabata when format changes or plan regenerates
+function resetCardioTimer() {
+  clearInterval(cardioTimer.interval);
+  cardioTimer.running   = false;
+  cardioTimer.remaining = cardioTimer.total;
+  cardioTimer.lastMinute = -1;
+  initTabataState();
+  updateCardioDisplay();
+}
+
+// Call resetCardioTimer on page load to initialise display
+document.addEventListener('DOMContentLoaded', () => {
+  updateStrengthDisplay();
+  initTabataState();
+  updateCardioDisplay();
+});
+</script>
+</body>
+</html>
