@@ -277,11 +277,9 @@
   .block-exercises {
     padding: 16px 20px;
     border-right: 1px solid var(--border);
-    overflow-y: auto;
-    max-height: 340px;
   }
 
-  /* Scrollbar styling */
+  /* Scrollbar styling kept for mobile fallback */
   .block-exercises::-webkit-scrollbar { width: 4px; }
   .block-exercises::-webkit-scrollbar-track { background: transparent; }
   .block-exercises::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
@@ -1057,6 +1055,11 @@ function generatePlan() {
   strengthTimer.remaining = strengthTimer.total;
   updateStrengthDisplay();
   resetCardioTimer();
+
+  // Scroll smoothly so Block A is at the top of the viewport
+  setTimeout(() => {
+    document.querySelector('.blocks-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 80);
 }
 
 function renderStrength(exercises) {
