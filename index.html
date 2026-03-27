@@ -372,7 +372,7 @@
     margin-top: 1px;
   }
 
-  .ex-right { display: flex; align-items: center; gap: 10px; }
+  .ex-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
   .ex-badge {
     font-size: 0.65rem;
@@ -383,21 +383,35 @@
     color: var(--muted);
     border: 1px solid var(--border);
     text-transform: uppercase;
+    white-space: nowrap;
   }
 
-  .ex-swap {
-    width: 24px; height: 24px;
+  .ex-actions {
+    display: flex;
+    gap: 5px;
+  }
+
+  .ex-action-btn {
+    padding: 4px 9px;
     border-radius: 6px;
     border: 1px solid var(--border);
     background: var(--surface);
-    color: var(--muted);
-    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     cursor: pointer;
-    font-size: 0.75rem;
     transition: all 0.15s;
+    white-space: nowrap;
+    color: var(--muted);
+    line-height: 1.4;
   }
 
-  .ex-swap:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-same-muscle { border-color: rgba(71,200,255,0.3); color: var(--accent3); }
+  .btn-same-muscle:hover { background: rgba(71,200,255,0.1); border-color: var(--accent3); }
+
+  .btn-random { border-color: rgba(255,107,53,0.3); color: var(--accent2); }
+  .btn-random:hover { background: rgba(255,107,53,0.1); border-color: var(--accent2); }
 
   /* Body part color map */
   .bp-core { background: #a78bfa; }
@@ -633,6 +647,78 @@
   .block-timer-panel.tabata-active { background: rgba(255,60,60,0.08); }
   .block-timer-panel.tabata-rest   { background: rgba(50,220,120,0.08); }
 
+  /* ── Lower Back Protection — 3-level segmented control ── */
+  .lb-segment-group { margin-bottom: 4px; }
+
+  .lb-segment {
+    display: flex;
+    gap: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin-top: 6px;
+  }
+
+  .lb-seg-btn {
+    flex: 1;
+    padding: 8px 4px;
+    text-align: center;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    background: var(--surface2);
+    color: var(--muted);
+    border: none;
+    border-right: 1px solid var(--border);
+    transition: background 0.2s, color 0.2s;
+    line-height: 1.3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .lb-seg-btn:last-child { border-right: none; }
+
+  .lb-seg-btn .seg-label { font-size: 0.78rem; font-weight: 600; }
+  .lb-seg-btn .seg-sub   { font-size: 0.6rem; opacity: 0.7; letter-spacing: 0.04em; }
+
+  .lb-seg-btn.active-none   { background: var(--surface); color: var(--text); }
+  .lb-seg-btn.active-light  { background: rgba(250,204,21,0.12); color: #facc15; border-color: rgba(250,204,21,0.25); }
+  .lb-seg-btn.active-heavy  { background: rgba(232,255,71,0.12); color: var(--accent); border-color: rgba(232,255,71,0.25); }
+
+  .lb-info {
+    margin-top: 8px;
+    font-size: 0.71rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    line-height: 1.6;
+    padding: 9px 12px;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: none;
+  }
+
+  .lb-info.visible        { display: block; }
+  .lb-info.info-light     { border-color: rgba(250,204,21,0.25); }
+  .lb-info.info-heavy     { border-color: rgba(232,255,71,0.25); }
+
+  /* warning badge on exercise items */
+  .ex-lb-warning {
+    font-size: 0.6rem;
+    font-family: 'DM Mono', monospace;
+    color: #facc15;
+    border: 1px solid rgba(250,204,21,0.35);
+    background: rgba(250,204,21,0.08);
+    border-radius: 100px;
+    padding: 2px 7px;
+    white-space: nowrap;
+    letter-spacing: 0.06em;
+  }
+
   @media (max-width: 900px) {
     .hero { grid-template-columns: 1fr; gap: 20px; }
     .block-body { grid-template-columns: 1fr; }
@@ -666,7 +752,7 @@
           <div class="stat-label">Exercises</div>
         </div>
         <div class="stat">
-          <div class="stat-val">32</div>
+          <div class="stat-val">35</div>
           <div class="stat-label">Minutes Total</div>
         </div>
         <div class="stat">
@@ -697,6 +783,25 @@
           <div class="chip" data-val="EMOM">EMOM</div>
           <div class="chip" data-val="Tabata">Tabata</div>
         </div>
+      </div>
+
+      <div class="filter-group lb-segment-group">
+        <span class="filter-label">Lower Back Protection</span>
+        <div class="lb-segment">
+          <div class="lb-seg-btn active-none" id="lb-btn-none" onclick="setLbLevel('none')">
+            <span class="seg-label">None</span>
+            <span class="seg-sub">All exercises</span>
+          </div>
+          <div class="lb-seg-btn" id="lb-btn-light" onclick="setLbLevel('light')">
+            <span class="seg-label">Light</span>
+            <span class="seg-sub">Some excluded</span>
+          </div>
+          <div class="lb-seg-btn" id="lb-btn-heavy" onclick="setLbLevel('heavy')">
+            <span class="seg-label">Heavy</span>
+            <span class="seg-sub">Fully protected</span>
+          </div>
+        </div>
+        <div class="lb-info" id="lb-info"></div>
       </div>
 
       <button class="btn-generate" onclick="generatePlan()">⚡ Generate Training Plan</button>
@@ -749,7 +854,7 @@
             <div class="block-title">CONDITIONING</div>
           </div>
           <div class="block-meta">
-            <div class="meta-item"><div class="meta-dot dot-cardio"></div>12 minutes</div>
+            <div class="meta-item"><div class="meta-dot dot-cardio"></div>15 minutes</div>
             <div class="meta-item"><div class="meta-dot dot-cardio"></div><span id="format-display">AMRAP</span></div>
           </div>
         </div>
@@ -761,7 +866,7 @@
               <div class="format-btn" onclick="setFormat('Tabata', this)">Tabata</div>
             </div>
             <div class="format-info" id="format-info">
-              <strong>AMRAP · 12 min</strong> — As Many Rounds As Possible. Complete the circuit continuously, resting only as needed.
+              <strong>AMRAP · 15 min</strong> — As Many Rounds As Possible. Complete the circuit continuously, resting only as needed.
             </div>
             <div class="exercise-list" id="cardio-list">
               <div class="empty-state">
@@ -773,7 +878,7 @@
           <div class="block-timer-panel" id="panel-cardio">
             <div class="countdown-timer" id="timer-cardio">
               <div class="cardio-timer-status" id="cardio-status"></div>
-              <div class="countdown-display" id="cardio-display">12:00</div>
+              <div class="countdown-display" id="cardio-display">15:00</div>
               <div class="cardio-timer-sub" id="cardio-sub"></div>
               <div class="countdown-controls">
                 <button class="timer-btn btn-start" onclick="timerAction('cardio','start')">▶ Start</button>
@@ -832,13 +937,13 @@ const EXERCISES = {
     { name: "Dumbbell Pullover", muscle: "Chest / Lats", bodyPart: "chest", eq: "dumbbell", reps: "12 reps" },
     { name: "TRX Push-Up", muscle: "Chest / Core / Triceps", bodyPart: "chest", eq: "trx", reps: "10 reps" },
     // Back
-    { name: "Bent-Over Row", muscle: "Upper Back / Lats / Biceps", bodyPart: "back", eq: "dumbbell", reps: "12 reps" },
-    { name: "Single-Arm Dumbbell Row", muscle: "Upper Back / Lats / Biceps", bodyPart: "back", eq: "dumbbell", reps: "10 each" },
+    { name: "Bent-Over Row", muscle: "Upper Back / Lats / Biceps", bodyPart: "back", eq: "dumbbell", reps: "12 reps", lbRisk: true },
+    { name: "Single-Arm Dumbbell Row", muscle: "Upper Back / Lats / Biceps", bodyPart: "back", eq: "dumbbell", reps: "10 each", lbRisk: true },
     { name: "TRX Row", muscle: "Upper Back / Lats / Biceps", bodyPart: "back", eq: "trx", reps: "12 reps" },
     // Lower Back
-    { name: "Superman Hold", muscle: "Lower Back / Glutes", bodyPart: "lowerback", eq: "bodyweight", reps: "40 sec" },
-    { name: "Good Morning (BW)", muscle: "Lower Back / Hamstrings", bodyPart: "lowerback", eq: "bodyweight", reps: "12 reps" },
-    { name: "Good Morning (Bar)", muscle: "Hamstrings / Lower Back", bodyPart: "lowerback", eq: "bar", reps: "12 reps" },
+    { name: "Superman Hold", muscle: "Lower Back / Glutes", bodyPart: "lowerback", eq: "bodyweight", reps: "40 sec", lbRisk: true },
+    { name: "Good Morning (BW)", muscle: "Lower Back / Hamstrings", bodyPart: "lowerback", eq: "bodyweight", reps: "12 reps", lbRisk: true },
+    { name: "Good Morning (Bar)", muscle: "Hamstrings / Lower Back", bodyPart: "lowerback", eq: "bar", reps: "12 reps", lbRisk: true },
     // Quads / Legs
     { name: "Squat", muscle: "Quads / Glutes", bodyPart: "legs", eq: "bodyweight", reps: "12 reps" },
     { name: "Sumo Squat", muscle: "Inner Thighs / Glutes", bodyPart: "legs", eq: "bodyweight", reps: "12 reps" },
@@ -852,13 +957,13 @@ const EXERCISES = {
     { name: "Donkey Kicks", muscle: "Glutes", bodyPart: "glutes", eq: "bodyweight", reps: "12 each" },
     { name: "Clamshells", muscle: "Glutes / Hip Abductors", bodyPart: "glutes", eq: "bodyweight", reps: "12 each" },
     // Hamstrings
-    { name: "Romanian Deadlift", muscle: "Hamstrings / Glutes", bodyPart: "hamstrings", eq: "dumbbell", reps: "12 reps" },
-    { name: "Single-Leg Deadlift", muscle: "Hamstrings / Glutes / Balance", bodyPart: "hamstrings", eq: "dumbbell", reps: "10 each" },
+    { name: "Romanian Deadlift", muscle: "Hamstrings / Glutes", bodyPart: "hamstrings", eq: "dumbbell", reps: "12 reps", lbRisk: true },
+    { name: "Single-Leg Deadlift", muscle: "Hamstrings / Glutes / Balance", bodyPart: "hamstrings", eq: "dumbbell", reps: "10 each", lbRisk: true },
     // Shoulders
     { name: "Dumbbell Shoulder Press", muscle: "Shoulders / Triceps", bodyPart: "shoulders", eq: "dumbbell", reps: "12 reps" },
     { name: "Dumbbell Lateral Raise", muscle: "Lateral Deltoids", bodyPart: "shoulders", eq: "dumbbell", reps: "12 reps" },
     { name: "Front Raise", muscle: "Front Deltoids", bodyPart: "shoulders", eq: "dumbbell", reps: "12 reps" },
-    { name: "Upright Row", muscle: "Shoulders / Traps", bodyPart: "shoulders", eq: "dumbbell", reps: "12 reps" },
+    { name: "Upright Row", muscle: "Shoulders / Traps", bodyPart: "shoulders", eq: "dumbbell", reps: "12 reps", lbRisk: true },
     // Biceps
     { name: "Dumbbell Curl", muscle: "Biceps", bodyPart: "biceps", eq: "dumbbell", reps: "12 reps" },
     { name: "Hammer Curl", muscle: "Biceps / Brachialis", bodyPart: "biceps", eq: "dumbbell", reps: "12 reps" },
@@ -866,33 +971,31 @@ const EXERCISES = {
     { name: "French Press", muscle: "Triceps", bodyPart: "triceps", eq: "dumbbell", reps: "12 reps" },
     { name: "TRX Tricep Extension", muscle: "Triceps / Core", bodyPart: "triceps", eq: "trx", reps: "12 reps" },
     // Full Body
-    { name: "Turkish Get-Up", muscle: "Full Body / Shoulder Stability", bodyPart: "fullbody", eq: "kettlebell", reps: "5 each" },
+    { name: "Turkish Get-Up", muscle: "Full Body / Shoulder Stability", bodyPart: "fullbody", eq: "kettlebell", reps: "5 each", lbRisk: true },
   ],
   cardio: [
-    // Pure cardio — always included regardless of equipment filter
-    { name: "Burpees", muscle: "Full Body / Cardio", bodyPart: "cardio", eq: "bodyweight", reps: "10 reps" },
+    { name: "Burpees", muscle: "Full Body / Cardio", bodyPart: "cardio", eq: "bodyweight", reps: "10 reps", lbRisk: true },
     { name: "Jump Squat", muscle: "Quads / Glutes / Cardio", bodyPart: "cardio", eq: "bodyweight", reps: "12 reps" },
-    { name: "Mountain Climbers", muscle: "Core / Cardio / Shoulders", bodyPart: "cardio", eq: "bodyweight", reps: "30 sec" },
+    { name: "Mountain Climbers", muscle: "Core / Cardio / Shoulders", bodyPart: "cardio", eq: "bodyweight", reps: "30 sec", lbRisk: true },
     { name: "High Knees", muscle: "Hip Flexors / Cardio", bodyPart: "cardio", eq: "bodyweight", reps: "30 sec" },
     { name: "Jumping Jacks", muscle: "Full Body / Cardio", bodyPart: "cardio", eq: "bodyweight", reps: "30 sec" },
     { name: "Skipping / Jump Rope", muscle: "Calves / Coordination", bodyPart: "calves", eq: "bodyweight", reps: "40 sec" },
     { name: "Tuck Jumps", muscle: "Legs / Power / Cardio", bodyPart: "legs", eq: "bodyweight", reps: "10 reps" },
     { name: "Lateral Bounds", muscle: "Glutes / Legs / Cardio", bodyPart: "legs", eq: "bodyweight", reps: "10 each" },
-    { name: "Bear Crawl", muscle: "Core / Shoulders / Cardio", bodyPart: "core", eq: "bodyweight", reps: "20 sec" },
+    { name: "Bear Crawl", muscle: "Core / Shoulders / Cardio", bodyPart: "core", eq: "bodyweight", reps: "20 sec", lbRisk: true },
     { name: "Squat to Kick", muscle: "Quads / Hip Flexors / Cardio", bodyPart: "legs", eq: "bodyweight", reps: "10 each" },
     { name: "Plank to Push-Up", muscle: "Core / Chest / Triceps", bodyPart: "core", eq: "bodyweight", reps: "10 reps" },
     { name: "Speed Skater", muscle: "Glutes / Legs / Balance", bodyPart: "glutes", eq: "bodyweight", reps: "12 each" },
-    // Light equipment cardio
-    { name: "Kettlebell Swing", muscle: "Glutes / Hamstrings / Lower Back", bodyPart: "hamstrings", eq: "kettlebell", reps: "15 reps" },
-    { name: "Thruster", muscle: "Full Body / Cardio / Power", bodyPart: "fullbody", eq: "dumbbell", reps: "10 reps" },
-    { name: "Dumbbell Snatch", muscle: "Full Body / Explosive Power", bodyPart: "fullbody", eq: "dumbbell", reps: "8 each" },
+    { name: "Kettlebell Swing", muscle: "Glutes / Hamstrings / Lower Back", bodyPart: "hamstrings", eq: "kettlebell", reps: "15 reps", lbRisk: true },
+    { name: "Thruster", muscle: "Full Body / Cardio / Power", bodyPart: "fullbody", eq: "dumbbell", reps: "10 reps", lbRisk: true },
+    { name: "Dumbbell Snatch", muscle: "Full Body / Explosive Power", bodyPart: "fullbody", eq: "dumbbell", reps: "8 each", lbRisk: true },
   ]
 };
 
 const FORMAT_INFO = {
-  AMRAP: "<strong>AMRAP · 12 min</strong> — As Many Rounds As Possible. Complete the circuit continuously, resting only as needed.",
-  EMOM: "<strong>EMOM · 12 min</strong> — Every Minute On the Minute. Start a new exercise at the top of each minute, cycling through the list. Rest whatever time remains in the minute.",
-  Tabata: "<strong>Tabata · 12 min</strong> — 20 seconds work / 10 seconds rest. Cycle through exercises, completing 6 rounds per exercise."
+  AMRAP: "<strong>AMRAP · 15 min</strong> — As Many Rounds As Possible. Complete the circuit continuously, resting only as needed.",
+  EMOM: "<strong>EMOM · 15 min</strong> — Every Minute On the Minute. Start a new exercise at the top of each minute, cycling through the list. Rest whatever time remains in the minute.",
+  Tabata: "<strong>Tabata · 15 min</strong> — 20 seconds work / 10 seconds rest. Cycle through exercises, completing 6 rounds per exercise."
 };
 
 const BP_COLORS = {
@@ -908,6 +1011,7 @@ let state = {
   equipment: new Set(["bodyweight", "kettlebell", "dumbbell", "bar", "trx"]),
   format: "AMRAP",
   exCount: 6,
+  lbLevel: 'none',   // 'none' | 'light' | 'heavy'
   strengthPlan: [],
   cardioPlan: []
 };
@@ -944,6 +1048,31 @@ document.querySelectorAll('#format-chips .chip').forEach(chip => {
 });
 
 
+const LB_INFO_TEXT = {
+  none:  '',
+  light: '⚡ <strong style="color:#facc15">Light</strong> — Excluded: KB Swings, Deadlifts (RDL & Single-Leg), Good Mornings, Bent-Over Rows, Turkish Get-Up, Burpees & Dumbbell Snatch. Kept: Thruster, Bear Crawl, Mountain Climbers, Upright Row, Superman Hold.',
+  heavy: '🛡 <strong style="color:var(--accent)">Heavy</strong> — All exercises with significant lumbar load excluded. Fully safe for acute lower back pain.'
+};
+
+function setLbLevel(level) {
+  state.lbLevel = level;
+  // Update segment button styles
+  ['none','light','heavy'].forEach(l => {
+    const btn = document.getElementById(`lb-btn-${l}`);
+    btn.className = 'lb-seg-btn' + (l === level ? ` active-${l}` : '');
+  });
+  // Update info box
+  const infoEl = document.getElementById('lb-info');
+  if (level === 'none') {
+    infoEl.classList.remove('visible', 'info-light', 'info-heavy');
+    infoEl.innerHTML = '';
+  } else {
+    infoEl.innerHTML = LB_INFO_TEXT[level];
+    infoEl.className = `lb-info visible info-${level}`;
+  }
+}
+
+
 function setFormat(fmt, btn) {
   state.format = fmt;
   document.getElementById('format-display').textContent = fmt;
@@ -975,8 +1104,20 @@ function shuffle(arr) {
   return a;
 }
 
+// Exercises allowed even at 'light' protection (only excluded at 'heavy')
+const LB_LIGHT_OK = new Set([
+  "Thruster", "Bear Crawl", "Mountain Climbers", "Upright Row", "Superman Hold"
+]);
+
 function filterByEquipment(exercises) {
-  return exercises.filter(ex => state.equipment.has(ex.eq));
+  return exercises.filter(ex => {
+    if (!state.equipment.has(ex.eq)) return false;
+    if (ex.lbRisk) {
+      if (state.lbLevel === 'heavy') return false;
+      if (state.lbLevel === 'light' && !LB_LIGHT_OK.has(ex.name)) return false;
+    }
+    return true;
+  });
 }
 
 function pickBalanced(pool, count) {
@@ -1094,9 +1235,12 @@ function createExItem(ex, idx, block) {
   const div = document.createElement('div');
   div.className = 'exercise-item';
   div.style.animationDelay = `${idx * 60}ms`;
+  const showBadge = ex.lbRisk && state.lbLevel === 'none';
+  const lbBadge = showBadge ? `<span class="ex-lb-warning">⚠ LB</span>` : '';
+  const numStr = (idx + 1) < 10 ? `0${idx + 1}` : `${idx + 1}`;
   div.innerHTML = `
     <div class="ex-left">
-      <div class="ex-num">0${idx + 1}</div>
+      <div class="ex-num">${numStr}</div>
       <div class="ex-body-dot ${BP_COLORS[ex.bodyPart] || 'bp-core'}"></div>
       <div>
         <div class="ex-name">${ex.name}</div>
@@ -1104,33 +1248,46 @@ function createExItem(ex, idx, block) {
       </div>
     </div>
     <div class="ex-right">
+      ${lbBadge}
       <div class="ex-badge">${ex.reps}</div>
-      <div class="ex-swap" title="Swap exercise" onclick="swapExercise('${block}', ${idx})">⟳</div>
+      <div class="ex-actions">
+        <button class="ex-action-btn btn-same-muscle" title="Replace keeping muscle group" onclick="replaceExercise('${block}', ${idx}, 'muscle')">≈ muscle</button>
+        <button class="ex-action-btn btn-random" title="Replace with random exercise" onclick="replaceExercise('${block}', ${idx}, 'random')">⚄ random</button>
+      </div>
     </div>
   `;
   return div;
 }
 
-function swapExercise(block, idx) {
+function replaceExercise(block, idx, mode) {
+  const pool = block === 'strength'
+    ? filterByEquipment(EXERCISES.strength)
+    : filterByEquipment(EXERCISES.cardio);
+  const plan = block === 'strength' ? state.strengthPlan : state.cardioPlan;
+  const current = plan[idx];
+
+  let candidates;
+  if (mode === 'muscle') {
+    // Same bodyPart, not already in plan
+    candidates = pool.filter(e => e.bodyPart === current.bodyPart && e.name !== current.name && !plan.some(p => p.name === e.name));
+    // Fallback: same bodyPart even if already used elsewhere
+    if (candidates.length === 0)
+      candidates = pool.filter(e => e.bodyPart === current.bodyPart && e.name !== current.name);
+  } else {
+    // Fully random: anything not already in plan
+    candidates = pool.filter(e => e.name !== current.name && !plan.some(p => p.name === e.name));
+    // Fallback: anything different
+    if (candidates.length === 0)
+      candidates = pool.filter(e => e.name !== current.name);
+  }
+
+  if (candidates.length === 0) return; // nothing to replace with
+
+  plan[idx] = shuffle(candidates)[0];
+
   if (block === 'strength') {
-    const current = state.strengthPlan[idx];
-    const pool = filterByEquipment(EXERCISES.strength).filter(e =>
-      e.bodyPart === current.bodyPart && !state.strengthPlan.includes(e)
-    );
-    if (pool.length > 0) {
-      state.strengthPlan[idx] = shuffle(pool)[0];
-    } else {
-      // fallback: any unused
-      const all = filterByEquipment(EXERCISES.strength).filter(e => !state.strengthPlan.includes(e));
-      if (all.length > 0) state.strengthPlan[idx] = shuffle(all)[0];
-    }
     renderStrength(state.strengthPlan);
   } else {
-    const current = state.cardioPlan[idx];
-    const cardioPool = filterByEquipment(EXERCISES.cardio);
-    const pool = cardioPool.filter(e => e.bodyPart === current.bodyPart && !state.cardioPlan.includes(e));
-    const fallback = cardioPool.filter(e => !state.cardioPlan.includes(e));
-    state.cardioPlan[idx] = shuffle(pool.length > 0 ? pool : fallback)[0] || current;
     renderCardio(state.cardioPlan);
   }
 }
@@ -1151,7 +1308,7 @@ function exportPlan() {
     text += `   Target: ${ex.muscle}\n`;
   });
   text += "\n";
-  text += `BLOCK B — CARDIO (12 min · ${state.format})\n`;
+  text += `BLOCK B — CARDIO (15 min · ${state.format})\n`;
   text += "───────────────────────────────\n";
   state.cardioPlan.forEach((ex, i) => {
     text += `${i + 1}. ${ex.name.padEnd(30)} ${getCardioReps(ex, i)}\n`;
@@ -1216,7 +1373,7 @@ const strengthTimer = {
 
 // ── Cardio timer (format-aware) ───────────────────────────────────────────────
 const cardioTimer = {
-  total: 12 * 60, remaining: 12 * 60,
+  total: 15 * 60, remaining: 15 * 60,
   interval: null, running: false,
   // EMOM
   lastMinute: -1,
@@ -1315,7 +1472,7 @@ function updateCardioDisplay() {
 function computeTabataRounds() {
   const exCount  = state.cardioPlan.length || 2;
   const secPerRound = exCount * 30;           // each ex: 20s active + 10s rest
-  return Math.floor((12 * 60) / secPerRound); // full rounds that fit in 12 min
+  return Math.floor((15 * 60) / secPerRound); // full rounds that fit in 15 min
 }
 
 function initTabataState() {
